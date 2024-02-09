@@ -32,9 +32,12 @@ class PubSub(Node):
         print("status update callback from " + self.component + " with RID: " + rid)
         method = "update_status"
         self.server_obj.call_method("2:" + method, str(msg.data))
+        print('Callback finishing...........................................')
+
 
 class LBRPubSub(PubSub):
     def __init__(self, ua_obj):
+        print('LBR Starting...........................................')
         super().__init__('lbr', ua_obj)
 
     def event_notification(self, event):
@@ -52,13 +55,16 @@ class LBRPubSub(PubSub):
 
 class KMPPubSub(PubSub):
     def __init__(self, ua_obj):
+        print('KMP Starting...........................................')
         super().__init__('kmp', ua_obj)
+        print('KMP Initialized...........................................')
 
     def event_notification(self, event):
         """
             event.Message.text = "speed x y th", e.g. "0.5 0 1 0"
         """
         
+        print('Event notification starts...........................................')
         action, rid = event.Message.Text.split(",")
         publisher = self.create_publisher(Twist, "cmd_vel_" + str(rid), 10)
         shutdown_publisher = self.create_publisher(String, self.component + '_shutdown_' + str(rid), 10)
@@ -79,6 +85,7 @@ class KMPPubSub(PubSub):
             twist.angular.y = 0.0
             twist.angular.z = float(e[3])*speed #or turn
             publisher.publish(twist)
+        print('Event notification ends...........................................')
 
 class CameraPubSub(PubSub):
     def __init__(self, ua_obj):
