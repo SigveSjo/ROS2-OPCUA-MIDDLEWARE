@@ -11,10 +11,10 @@ opc_ua_domain="andrcar-master.ivt.ntnu.no"
 
 if [ $build_type = 'source_' ]
 then
-    source ~/ros2_foxy/install/setup.bash
+    source ~/ros2_humble/install/setup.bash
 elif [ $build_type = 'binary' ]
 then
-    source /opt/ros/foxy/setup.bash
+    source /opt/ros/humble/setup.bash
 fi
 
 if [ $run_type = 'test' ]
