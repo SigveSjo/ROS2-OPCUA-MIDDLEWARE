@@ -87,6 +87,40 @@ class KMPPubSub(PubSub):
             publisher.publish(twist)
         print('Event notification ends...........................................')
 
+class TurtleBotPubSub(PubSub):
+    def __init__(self, ua_obj):
+        print('TurtleBot Starting...........................................')
+        super().__init__('turtlebot', ua_obj)
+        print('TurtleBot Initialized...........................................')
+
+    def event_notification(self, event):
+        """
+            event.Message.text = "speed x y th", e.g. "0.5 0 1 0"
+        """
+        
+        print('Event notification starts...........................................')
+        action, rid = event.Message.Text.split(",")
+        publisher = self.create_publisher(Twist, "cmd_vel_" + str(rid), 10)
+        shutdown_publisher = self.create_publisher(String, self.component + '_shutdown_' + str(rid), 10)
+
+        e = action.split(" ")
+
+        if e[0] == "shutdown":
+            msg = String()
+            msg.data = "shutdown"
+            shutdown_publisher.publish(msg)
+        else:
+            speed = float(e[0])
+            twist = Twist()
+            twist.linear.x = float(e[1])*speed
+            twist.linear.y = float(e[2])*speed
+            twist.linear.z = 0.0
+            twist.angular.x = 0.0
+            twist.angular.y = 0.0
+            twist.angular.z = float(e[3])*speed #or turn
+            publisher.publish(twist)
+        print('Event notification ends...........................................')
+
 class CameraPubSub(PubSub):
     def __init__(self, ua_obj):
         super().__init__('camera', ua_obj)
@@ -128,10 +162,12 @@ def main(argv=sys.argv[1:]):
 
     lbr_event = root.get_child(["0:Types", "0:EventTypes", "0:BaseEventType", "2:LBREvent"])
     kmp_event = root.get_child(["0:Types", "0:EventTypes", "0:BaseEventType", "2:KMPEvent"])
+    turtlebot_event = root.get_child(["0:Types", "0:EventTypes", "0:BaseEventType", "2:TurtleBotEvent"])
     camera_event = root.get_child(["0:Types", "0:EventTypes", "0:BaseEventType", "2:CameraEvent"])
 
     lbr_publisher = LBRPubSub(obj)
     kmp_publisher = KMPPubSub(obj)
+    turtlebot_publisher = TurtleBotPubSub(obj)
     camera_publisher = CameraPubSub(obj)
 
     lbr_sub = opcua_client.create_subscription(100, lbr_publisher)
@@ -139,6 +175,9 @@ def main(argv=sys.argv[1:]):
 
     kmp_sub = opcua_client.create_subscription(100, kmp_publisher)
     kmp_handle = kmp_sub.subscribe_events(obj, kmp_event)
+
+    turtlebot_sub = opcua_client.create_subscription(100, turtlebot_publisher)
+    turtlebot_handle = turtlebot_sub.subscribe_events(obj, turtlebot_event)
 
     camera_sub = opcua_client.create_subscription(100, camera_publisher)
     camera_handle = camera_sub.subscribe_events(obj, camera_event)
@@ -149,18 +188,22 @@ def main(argv=sys.argv[1:]):
         executor = MultiThreadedExecutor(num_threads=4)
         executor.add_node(lbr_publisher)
         executor.add_node(kmp_publisher)
+        executor.add_node(turtlebot_publisher)
         executor.add_node(camera_publisher)
         executor.spin()
     finally:
         executor.shutdown()
         lbr_publisher.destroy_node()
         kmp_publisher.destroy_node()
+        turtlebot_publisher.destroy_node()
         camera_publisher.destroy_node()
         
         lbr_sub.unsubscribe(lbr_handle)
         lbr_sub.delete()
         kmp_sub.unsubscribe(kmp_handle)
         kmp_sub.delete()
+        turtlebot_sub.unsubscribe(turtlebot_handle)
+        turtlebot_sub.delete()
         camera_sub.unsubscribe(camera_handle)
         camera_sub.delete()
 
