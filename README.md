@@ -1,5 +1,6 @@
 # ROS2-OPCUA-MIDDLEWARE
 This repository is part of the Master's project conducted by Andreas Chanon Arnholm and Mathias Neslow Henriksen during the spring of 2021.
+The repository has been furtrher updated as a part of the Master's project conducted by Andreas Lindkjenn Bø and Sigve Sjøvold during the spring of 2024.
 
 The ROS2-OPCUA-MIDDLEWARE is what connects a [ROS2-ENTITY](https://github.com/TPK4960-RoboticsAndAutomation-Master/ROS2-ENTITY) with the [AAS](https://github.com/TPK4960-RoboticsAndAutomation-Master/AAS). It is a ROS 2 program that spins a *publisher-subscriber hybrid* node that is used to receive (*subscribe* to) status updates from an entity in the form of ROS messages and forward (*publish*) it over OPC UA to the AAS, and to receive commands from the AAS over OPC UA and forward it in the form of ROS messages to an entity.   
 
